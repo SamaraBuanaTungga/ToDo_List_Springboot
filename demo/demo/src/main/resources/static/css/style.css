@@ -1,0 +1,27 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    margin: 10px 0;
+}
+
+.completed {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+.list-group-item {
+    transition: all 0.3s ease;
+}
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+.input-group input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+}

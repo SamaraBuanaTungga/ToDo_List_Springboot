@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="text-center mb-4 py-4 rounded shadow" style="background: linear-gradient(135deg, #0d6efd, #6610f2); color: white;">
+            <h1 class="display-5 fw-bold mb-0">
+                <i class="bi bi-card-checklist me-2"></i> To-Do List
+            </h1>
+            <p class="lead mt-2">Catat, tandai, dan selesaikan tugasmu dengan mudah 📋</p>
+        </div>
+        
+        
+    <form action="/add" method="post" class="needs-validation mb-3" novalidate>
+        <div class="input-group">
+            <input type="text" name="task" class="form-control fs-5 py-2" placeholder="Tambahkan tugas..." required>
+
+            <button type="submit" class="btn btn-primary">Tambah</button>
+        </div>
+    </form>
+    
+    <form action="/filter" method="get" class="mb-4 text-center">
+        <ul class="nav nav-pills justify-content-center gap-2">
+            <li class="nav-item">
+                <button type="submit" name="filter" value="all"
+                        th:classappend="${filter == null or filter == 'all'} ? ' bg-primary text-white' : ' btn-outline-primary'"
+                        class="btn">Semua</button>
+            </li>
+            <li class="nav-item">
+                <button type="submit" name="filter" value="completed"
+                        th:classappend="${filter == 'completed'} ? ' bg-success text-white' : ' btn-outline-success'"
+                        class="btn">Selesai</button>
+            </li>
+            <li class="nav-item">
+                <button type="submit" name="filter" value="incomplete"
+                        th:classappend="${filter == 'incomplete'} ? ' bg-danger text-white' : ' btn-outline-danger'"
+                        class="btn">Belum Selesai</button>
+            </li>
+        </ul>
+    </form>
+        
+    <div class="list-group">
+        <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2 px-3 py-2"
+             th:each="todo : ${todos}"
+             th:classappend="${todo.completed} ? 'list-group-item-success' : ''">
+            
+            <div class="d-flex align-items-center">
+                <span th:text="${todo.task}"
+                      th:classappend="${todo.completed} ? 'completed' : ''"
+                      class="fs-5"></span>
+            </div>
+    
+            <div>
+                <form th:action="@{'/update/' + ${todo.id}}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-success btn-sm me-1" title="Tandai Selesai">✔</button>
+                </form>
+                <form th:action="@{'/delete/' + ${todo.id}}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">❌</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
