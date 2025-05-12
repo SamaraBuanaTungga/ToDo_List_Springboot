@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+
 
 @Entity
 @Table(name = "todos")
@@ -43,4 +45,15 @@ public class ToDo {
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @NotEmpty(message = "Judul tidak boleh kosong")
+    private String title;
+
 }
