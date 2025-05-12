@@ -67,5 +67,5 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 ## Demo Proyek
 <ul>
   <li>Github: <a href="https://github.com/SamaraBuanaTungga/ToDo_List_Springboot">Github</a></li>
-  <li>Youtube: <a href="">Youtube</a></li>
+  <li>Youtube: <a href="https://youtu.be/Qwt4lGrXJkI?si=hjXuTVSJS_xxRUx4">Youtube</a></li>
 </ul>
