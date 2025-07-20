@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Entity
+@Table(name = "user") // untuk menghindari reserved keyword
 public class User {
 
     @Id
@@ -14,7 +15,11 @@ public class User {
     @Column(unique = true)
     private String username;
 
+    @Column(nullable = false)
     private String password;
+
+    @Column(unique = true, nullable = false)
+    private String email; // <- Tambahan di sini
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<ToDo> todos = new ArrayList<>();
@@ -22,13 +27,13 @@ public class User {
     // Constructor
     public User() {}
 
-    public User(String username, String password) {
+    public User(String username, String password, String email) {
         this.username = username;
         this.password = password;
+        this.email = email;
     }
 
-    // Getters and Setters
-
+    // Getter & Setter
     public Long getId() {
         return id;
     }
@@ -51,6 +56,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() { // Tambahan
+        return email;
+    }
+
+    public void setEmail(String email) { // Tambahan
+        this.email = email;
     }
 
     public List<ToDo> getTodos() {
