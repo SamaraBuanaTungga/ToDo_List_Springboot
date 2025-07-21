@@ -18,7 +18,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class ProjectController {
@@ -44,20 +46,32 @@ private com.example.demo.repository.UserRepository userRepo;
 
     // HANYA SATU MAPPING UNTUK GET /project
     @GetMapping("/project")
-    public String showProjects(Model model, Principal principal) {
-        if (principal != null) {
-            String username = principal.getName();
-            User currentUser = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
+public String showProjects(Model model, Principal principal) {
+    if (principal != null) {
+        String username = principal.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
-            List<GroupTodo> myProjects = groupTodoRepository.findByCreatedBy(currentUser);
-            model.addAttribute("projects", myProjects);
-            model.addAttribute("username", username);
-        } else {
-            model.addAttribute("projects", List.of());
-        }
-        return "project";
+        // Proyek yang dibuat oleh user
+        List<GroupTodo> ownedProjects = groupTodoRepository.findByCreatedBy(currentUser);
+
+        // Proyek yang user menjadi member (tidak termasuk yang dibuat sendiri)
+        List<GroupTodo> memberProjects = groupTodoRepository.findProjectsByMember(currentUser);
+
+        // Gabungkan kedua list tanpa duplikat (misalnya pakai Set)
+        Set<GroupTodo> allProjects = new HashSet<>();
+        allProjects.addAll(ownedProjects);
+        allProjects.addAll(memberProjects);
+
+        model.addAttribute("projects", allProjects);
+        model.addAttribute("username", username);
+    } else {
+        model.addAttribute("projects", List.of());
     }
+
+    return "project";
+}
+
 
     @PostMapping("/project/add")
     public String addProject(@RequestParam String title, Principal principal) {
@@ -106,31 +120,22 @@ public String addTaskToProject(
         @PathVariable("id") Long projectId,
         @RequestParam("task") String task,
         @RequestParam("deadline") String deadline,
-        @RequestParam("assigneeId") Long assigneeId,
-        Principal principal) {
+        @RequestParam("assigneeId") Long assigneeId) {
 
-    GroupTodo group = groupTodoRepository.findById(projectId)
-            .orElseThrow(() -> new RuntimeException("Group not found"));
-
-    User assignee = userRepository.findById(assigneeId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-    User creator = userRepository.findByUsername(principal.getName())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    GroupTodo group = groupTodoRepository.findById(projectId).orElseThrow();
+    User assignee = userRepo.findById(assigneeId).orElseThrow();
 
     ToDo newTask = new ToDo();
     newTask.setTask(task);
     newTask.setDeadline(LocalDate.parse(deadline));
-    newTask.setUser(assignee);
-    newTask.setGroup(group);
+    newTask.setUser(assignee);        // Penting!
+    newTask.setGroup(group);          // Penting!
     newTask.setCompleted(false);
-    newTask.setCreatedBy(creator);
 
-    todoRepo.save(newTask);
+    todoRepo.save(newTask);           // Simpan ke database
 
     return "redirect:/project/" + projectId;
 }
-
 
 
 }
