@@ -2,118 +2,144 @@
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>To-Do List</title>
+    <title>Dashboard | Tugas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar a {
+            font-weight: 500;
+        }
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .sidebar a:hover {
+            background-color: #e2e6ea;
+        }
+    </style>
 </head>
 <body>
-<div class="container py-5">
-    <div class="d-flex justify-content-end align-items-center mb-3" th:if="${username != null}">
-        <div class="d-flex align-items-center bg-white border shadow-sm rounded-pill px-3 py-2 me-2" style="gap: 0.5rem;">
-            <i class="bi bi-person-circle text-primary fs-5"></i>
-            <span class="fw-semibold text-dark">Login sebagai:</span>
-            <strong class="text-primary" th:text="${username}"></strong>
-        </div>
-        <form th:action="@{/logout}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
-                <i class="bi bi-box-arrow-right"></i> Logout
-            </button>
-        </form>
-    </div>
-    
-    <div class="text-center mb-4 py-4 rounded shadow header-brand">
-        <h1 class="display-5 fw-bold mb-0">
-            <i class="bi bi-card-checklist me-2"></i> To-Do List
-        </h1>
-        <p class="lead mt-2">Catat, tandai, dan selesaikan tugasmu dengan mudah 📋</p>
-    </div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 sidebar py-4 px-3">
+            <h4 class="text-center mb-4">
+                <i class="bi bi-card-checklist text-primary me-2"></i> Tugas
+            </h4>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link active rounded px-3 py-2" href="#">Individu</a>
+                </li>
+                <li class="nav-item mb-2">
+    <a class="nav-link rounded px-3 py-2" th:href="@{/project}">Kelompok / Proyek</a>
+        </li>
 
-    <form action="/add" method="post" class="needs-validation mb-3" novalidate>
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <div class="input-group">
-            <input type="text" name="task" class="form-control fs-5 py-2" placeholder="Tambahkan tugas..." required>
-            <button type="submit" class="btn btn-primary">Tambah</button>
-        </div>
-    </form>
-
-    <form action="/filter" method="get" class="mb-4 text-center">
-        <ul class="nav nav-pills justify-content-center gap-2">
-            <li class="nav-item">
-                <button type="submit" name="filter" value="all"
-                        th:classappend="${filter == null or filter == 'all'} ? ' bg-primary text-white' : ' btn-outline-primary'"
-                        class="btn">Semua</button>
-            </li>
-            <li class="nav-item">
-                <button type="submit" name="filter" value="completed"
-                        th:classappend="${filter == 'completed'} ? ' bg-success text-white' : ' btn-outline-success'"
-                        class="btn">Selesai</button>
-            </li>
-            <li class="nav-item">
-                <button type="submit" name="filter" value="incomplete"
-                        th:classappend="${filter == 'incomplete'} ? ' bg-danger text-white' : ' btn-outline-danger'"
-                        class="btn">Belum Selesai</button>
-            </li>
-        </ul>
-    </form>
-
-    <div class="list-group">
-        <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2 px-3 py-2"
-             th:each="todo : ${todos}"
-             th:classappend="${todo.completed} ? 'list-group-item-success' : ''">
-
-            <div class="d-flex align-items-center">
-                <span th:text="${todo.task}" th:classappend="${todo.completed} ? 'completed' : ''" class="fs-5"></span>
-            </div>
-
-            <div>
-                <button type="button" class="btn btn-outline-primary btn-sm me-1"
-                        data-bs-toggle="modal"
-                        th:data-bs-target="'#editModal-' + ${todo.id}"
-                        title="Edit"
-                        th:if="${!todo.completed}">✎</button>
-
-                <form th:action="@{'/update/' + ${todo.id}}" method="post" class="d-inline">
-                    <button type="submit"
-                            th:classappend="${todo.completed} ? ' btn-outline-warning' : ' btn-outline-success'"
-                            class="btn btn-sm me-1"
-                            th:title="${todo.completed} ? 'Tandai Belum Selesai' : 'Tandai Selesai'">
-                        <span th:text="${todo.completed} ? '↩' : '✔'"></span>
+            </ul>
+            <div class="mt-5">
+                <div class="d-flex align-items-center bg-white border shadow-sm rounded-pill px-3 py-2 mb-3" th:if="${username != null}">
+                    <i class="bi bi-person-circle text-primary me-2 fs-5"></i>
+                    <span class="fw-semibold">Login sebagai:</span>
+                    <strong class="ms-2 text-primary" th:text="${username}"></strong>
+                </div>
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-box-arrow-right"></i> Logout
                     </button>
                 </form>
-
-                <form th:action="@{'/delete/' + ${todo.id}}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">❌</button>
-                </form>
             </div>
-        </div>
+        </nav>
 
-        <div th:each="todo : ${todos}">
-            <div class="modal fade" th:id="'editModal-' + ${todo.id}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form th:action="@{'/edit/' + ${todo.id}}" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Tugas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="text" class="form-control" name="task" th:value="${todo.task}" required>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary">Update</button>
-                            </div>
-                        </form>
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 px-4 py-4">
+            <div class="mb-4">
+                <h2 class="fw-bold">Daftar Tugas</h2>
+                <p class="text-muted">Kelola tugas harianmu dengan mudah</p>
+            </div>
+
+            
+            <!-- Form Tambah Tugas -->
+<form action="/add" method="post" class="needs-validation mb-4" novalidate>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <div class="row g-2">
+        <div class="col-md-6">
+            <input type="text" name="task" class="form-control fs-5 py-2" placeholder="Nama tugas..." required>
+        </div>
+        <div class="col-md-4">
+            <input type="date" name="deadline" class="form-control fs-5 py-2" required>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary py-2">Tambah</button>
+        </div>
+    </div>
+</form>
+
+            <!-- Daftar Tugas -->
+<div class="list-group">
+    <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2 px-3 py-2"
+         th:each="todo : ${todos}"
+         th:classappend="${todo.completed} ? 'list-group-item-success' : ''">
+
+        <div>
+            <div class="fs-5 fw-semibold" th:text="${todo.task}"></div>
+            <small class="text-muted" th:if="${todo.deadline != null}">
+                Deadline: <span th:text="${#temporals.format(todo.deadline, 'dd MMMM yyyy')}"></span>
+            </small>
+        </div>
+        <div>
+            <button type="button" class="btn btn-outline-primary btn-sm me-1"
+                    data-bs-toggle="modal"
+                    th:data-bs-target="'#editModal-' + ${todo.id}"
+                    th:if="${!todo.completed}">✎</button>
+
+            <form th:action="@{'/update/' + ${todo.id}}" method="post" class="d-inline">
+                <button type="submit"
+                        th:classappend="${todo.completed} ? ' btn-outline-warning' : ' btn-outline-success'"
+                        class="btn btn-sm me-1">
+                    <span th:text="${todo.completed} ? '↩' : '✔'"></span>
+                </button>
+            </form>
+
+            <form th:action="@{'/delete/' + ${todo.id}}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger btn-sm">❌</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+            <!-- Modal Edit -->
+            <div th:each="todo : ${todos}">
+                <div class="modal fade" th:id="'editModal-' + ${todo.id}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{'/edit/' + ${todo.id}}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Tugas</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="text" class="form-control" name="task" th:value="${todo.task}" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
+        </main>
     </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

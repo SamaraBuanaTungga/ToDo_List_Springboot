@@ -1,33 +1,27 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.ToDo;
+import com.example.demo.model.User;
 import com.example.demo.repository.ToDoRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.ToDoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
-
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
-
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/")
 public class ToDoController {
 
-    private final ToDoRepository toDoRepository;
-
-    @Autowired
-    private ToDoService toDoService;
-
-    ToDoController(ToDoRepository toDoRepository) {
-        this.toDoRepository = toDoRepository;
-    }
+    @Autowired private ToDoService toDoService;
+    @Autowired private UserRepository userRepo;
+    @Autowired private ToDoRepository todoRepo;
 
     @GetMapping
     public String home(Model model, Principal principal) {
@@ -63,7 +57,7 @@ public class ToDoController {
         });
         return "redirect:/";
     }
-    
+
     @GetMapping("/filter")
     public String filterTodos(@RequestParam String filter, Model model, Principal principal) {
         User user = userRepo.findByUsername(principal.getName()).orElseThrow();
@@ -71,13 +65,13 @@ public class ToDoController {
 
         switch (filter) {
             case "completed":
-                filteredTodos = toDoRepository.findByUserAndCompleted(user, true);
+                filteredTodos = todoRepo.findByUserAndCompleted(user, true);
                 break;
             case "incomplete":
-                filteredTodos = toDoRepository.findByUserAndCompleted(user, false);
+                filteredTodos = todoRepo.findByUserAndCompleted(user, false);
                 break;
             default:
-                filteredTodos = toDoRepository.findByUser(user);
+                filteredTodos = todoRepo.findByUser(user);
         }
 
         model.addAttribute("todos", filteredTodos);
@@ -85,13 +79,6 @@ public class ToDoController {
         model.addAttribute("username", principal.getName());
         return "index";
     }
-
-    
-    @Autowired
-    private UserRepository userRepo;
-
-    @Autowired
-    private ToDoRepository todoRepo;
 
     @GetMapping("/todos")
     public String listTodos(Model model, Principal principal) {
@@ -107,18 +94,21 @@ public class ToDoController {
         todo.setUser(user);
         todoRepo.save(todo);
         return "redirect:/index";
-
     }
+
     @PostMapping("/edit/{id}")
-    public String editTodo(@PathVariable Long id, @RequestParam String task) {
+    public String editTodo(@PathVariable Long id,
+                           @RequestParam String task,
+                           @RequestParam(required = false) String deadline) {
         Optional<ToDo> optionalTodo = toDoService.getTodoById(id);
         if (optionalTodo.isPresent()) {
             ToDo todo = optionalTodo.get();
             todo.setTask(task);
+            if (deadline != null && !deadline.isEmpty()) {
+                todo.setDeadline(LocalDate.parse(deadline));
+            }
             toDoService.saveTodo(todo);
         }
         return "redirect:/";
     }
-    
-
 }

@@ -3,18 +3,28 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "todos")
 public class ToDo {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String task;
     private boolean completed;
 
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    // ✅ Kolom untuk tanggal deadline
+    private LocalDate deadline;
+
+    // === Constructors ===
     public ToDo() {}
 
     public ToDo(String task, boolean completed) {
@@ -22,6 +32,7 @@ public class ToDo {
         this.completed = completed;
     }
 
+    // === Getters & Setters ===
     public Long getId() {
         return id;
     }
@@ -45,15 +56,22 @@ public class ToDo {
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+
+   
+
+    public User getUser() {
+        return user;
+    }
 
     public void setUser(User user) {
         this.user = user;
     }
 
-    @NotEmpty(message = "Judul tidak boleh kosong")
-    private String title;
+    public LocalDate getDeadline() {
+        return deadline;
+    }
 
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
+    }
 }
