@@ -80,15 +80,12 @@
                 <div class="mt-4">
                     <form th:action="@{'/project/' + ${projectDetail.id} + '/add-task'}" method="post" class="row g-3">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
                         <div class="col-md-5">
-                            <input type="text" name="title" class="form-control" placeholder="Nama Tugas" required>
+                            <input type="text" name="task" class="form-control" placeholder="Nama Tugas" required>
                         </div>
-
                         <div class="col-md-3">
                             <input type="date" name="deadline" class="form-control" required>
                         </div>
-
                         <div class="col-md-3">
                             <select name="assigneeId" class="form-select" required>
                                 <option th:each="member : ${projectDetail.members}"
@@ -97,13 +94,32 @@
                                 </option>
                             </select>
                         </div>
-
                         <div class="col-md-1">
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="bi bi-check2-circle"></i>
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Daftar Task -->
+                <div class="mt-5">
+                    <h5 class="mb-3">Daftar Tugas</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-start"
+                            th:each="task : ${projectTasks}">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold" th:text="${task.task}">Nama Tugas</div>
+                                <small>
+                                    Deadline: <span th:text="${task.deadline}">2025-01-01</span><br>
+                                    Assigned to: <span th:text="${task.user.username}">User</span>
+                                </small>
+                            </div>
+                            <span class="badge rounded-pill"
+                                  th:classappend="${task.completed} ? 'bg-success' : 'bg-warning text-dark'"
+                                  th:text="${task.completed} ? 'Selesai' : 'Belum'">Status</span>
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- Form Tambah Member -->

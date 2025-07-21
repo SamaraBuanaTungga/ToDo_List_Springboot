@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.GroupTodo;
 import com.example.demo.model.ProjectMember;
+import com.example.demo.model.ToDo;
 import com.example.demo.model.User;
 import com.example.demo.repository.GroupTodoRepository;
 import com.example.demo.repository.ProjectMemberRepository;
@@ -33,6 +34,13 @@ public class ProjectController {
 
     @Autowired
     private GroupTodoRepository groupTodoRepository;
+
+    @Autowired
+private com.example.demo.repository.ToDoRepository todoRepo;
+
+@Autowired
+private com.example.demo.repository.UserRepository userRepo;
+
 
     // HANYA SATU MAPPING UNTUK GET /project
     @GetMapping("/project")
@@ -96,15 +104,33 @@ public String addMemberToProject(@PathVariable Long id, @RequestParam String use
 @PostMapping("/project/{id}/add-task")
 public String addTaskToProject(
         @PathVariable("id") Long projectId,
-        @RequestParam("title") String title,
-        @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
+        @RequestParam("task") String task,
+        @RequestParam("deadline") String deadline,
         @RequestParam("assigneeId") Long assigneeId,
-        Principal principal,
-        RedirectAttributes redirectAttributes) {
-    // TODO: Add logic to create and save the task here
+        Principal principal) {
+
+    GroupTodo group = groupTodoRepository.findById(projectId)
+            .orElseThrow(() -> new RuntimeException("Group not found"));
+
+    User assignee = userRepository.findById(assigneeId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    User creator = userRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    ToDo newTask = new ToDo();
+    newTask.setTask(task);
+    newTask.setDeadline(LocalDate.parse(deadline));
+    newTask.setUser(assignee);
+    newTask.setGroup(group);
+    newTask.setCompleted(false);
+    newTask.setCreatedBy(creator);
+
+    todoRepo.save(newTask);
 
     return "redirect:/project/" + projectId;
 }
+
 
 
 }

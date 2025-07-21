@@ -1,8 +1,6 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-
 import java.time.LocalDate;
 
 @Entity
@@ -13,15 +11,28 @@ public class ToDo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String title;
+
     private String task;
+
     private boolean completed;
 
+    // Siapa yang membuat task ini
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
+    // Untuk task proyek
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private GroupTodo group;
+
+    // Siapa yang dikerahkan (assigned user)
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    // ✅ Kolom untuk tanggal deadline
+    // Deadline tugas
     private LocalDate deadline;
 
     // === Constructors ===
@@ -57,7 +68,29 @@ public class ToDo {
         this.completed = completed;
     }
 
-   
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public GroupTodo getGroup() {
+        return group;
+    }
+
+    public void setGroup(GroupTodo group) {
+        this.group = group;
+    }
 
     public User getUser() {
         return user;
