@@ -9,11 +9,14 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.ProjectMemberRepository;
 import com.example.demo.service.GroupTodoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -89,5 +92,19 @@ public String addMemberToProject(@PathVariable Long id, @RequestParam String use
 
     return "redirect:/project/" + id;
 }
+
+@PostMapping("/project/{id}/add-task")
+public String addTaskToProject(
+        @PathVariable("id") Long projectId,
+        @RequestParam("title") String title,
+        @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
+        @RequestParam("assigneeId") Long assigneeId,
+        Principal principal,
+        RedirectAttributes redirectAttributes) {
+    // TODO: Add logic to create and save the task here
+
+    return "redirect:/project/" + projectId;
+}
+
 
 }
