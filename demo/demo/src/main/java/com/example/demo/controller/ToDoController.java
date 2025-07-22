@@ -24,15 +24,16 @@ public class ToDoController {
     @Autowired private ToDoRepository todoRepo;
 
     @GetMapping
-    public String home(Model model, Principal principal) {
-        if (principal != null) {
-            User user = userRepo.findByUsername(principal.getName()).orElseThrow();
-            model.addAttribute("todos", todoRepo.findByUser(user));
-            model.addAttribute("username", principal.getName());
-        }
-        model.addAttribute("newTodo", new ToDo());
-        return "index";
+public String home(Model model, Principal principal) {
+    if (principal != null) {
+        User user = userRepo.findByUsername(principal.getName()).orElseThrow();
+        model.addAttribute("todos", todoRepo.findByUserAndGroupIsNull(user));
+        model.addAttribute("username", principal.getName());
     }
+    model.addAttribute("newTodo", new ToDo());
+    return "index";
+}
+
 
     @PostMapping("/add")
     public String addTodo(@ModelAttribute ToDo todo, Principal principal) {
@@ -71,7 +72,8 @@ public class ToDoController {
                 filteredTodos = todoRepo.findByUserAndCompleted(user, false);
                 break;
             default:
-                filteredTodos = todoRepo.findByUser(user);
+    filteredTodos = todoRepo.findByUserAndGroupIsNull(user);
+
         }
 
         model.addAttribute("todos", filteredTodos);
@@ -80,13 +82,14 @@ public class ToDoController {
         return "index";
     }
 
-    @GetMapping("/todos")
-    public String listTodos(Model model, Principal principal) {
-        User user = userRepo.findByUsername(principal.getName()).orElseThrow();
-        model.addAttribute("todos", todoRepo.findByUser(user));
-        model.addAttribute("username", principal.getName());
-        return "index";
-    }
+  @GetMapping("/todos")
+public String listTodos(Model model, Principal principal) {
+    User user = userRepo.findByUsername(principal.getName()).orElseThrow();
+    model.addAttribute("todos", todoRepo.findByUserAndGroupIsNull(user));
+    model.addAttribute("username", principal.getName());
+    return "index";
+}
+
 
     @PostMapping("/todos/create")
     public String createTodo(@ModelAttribute ToDo todo, Principal principal) {
@@ -105,10 +108,30 @@ public class ToDoController {
             ToDo todo = optionalTodo.get();
             todo.setTask(task);
             if (deadline != null && !deadline.isEmpty()) {
-                todo.setDeadline(LocalDate.parse(deadline));
+                todo.setDeadline(LocalDate.now());
             }
             toDoService.saveTodo(todo);
         }
         return "redirect:/";
     }
+
+    @GetMapping("/task/{id}/complete")
+    public String markTaskAsCompleted(@PathVariable Long id) {
+    Optional<ToDo> todo = toDoService.getTodoById(id);
+    todo.ifPresent(t -> {
+        t.setCompleted(true); // atau toggle jika kamu ingin ubah-ubah statusnya
+        toDoService.saveTodo(t);
+    });
+    return "redirect:/project/{id}";
+}
+    @PostMapping("/task/{id}/complete")
+public String completeTask(@PathVariable Long id) {
+    Optional<ToDo> todo = toDoService.getTodoById(id);
+    todo.ifPresent(t -> {
+        t.setCompleted(true);
+        toDoService.saveTodo(t);
+    });
+    return "redirect:/project/{id}"; // atau redirect ke halaman proyek
+}
+
 }

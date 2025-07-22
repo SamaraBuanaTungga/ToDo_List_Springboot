@@ -15,15 +15,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.demo.model.ToDo;
+
 
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class ProjectController {
+
+    private final ToDoController toDoController;
 
     @Autowired
     private GroupTodoService groupTodoService;
@@ -34,6 +40,8 @@ public class ProjectController {
     @Autowired
     private UserRepository userRepository;
 
+    
+
     @Autowired
     private GroupTodoRepository groupTodoRepository;
 
@@ -41,7 +49,12 @@ public class ProjectController {
 private com.example.demo.repository.ToDoRepository todoRepo;
 
 @Autowired
-private com.example.demo.repository.UserRepository userRepo;
+private UserRepository userRepo;
+
+
+    ProjectController(ToDoController toDoController) {
+        this.toDoController = toDoController;
+    }
 
 
     // HANYA SATU MAPPING UNTUK GET /project
@@ -89,13 +102,41 @@ public String showProjects(Model model, Principal principal) {
         return "redirect:/project";
     }
 
-   @GetMapping("/project/{id}")
-public String viewProjectDetail(@PathVariable Long id, Model model, Principal principal) {
-    GroupTodo project = groupTodoRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Project not found"));
+@GetMapping("/project/{projectId}")
+public String viewProjectDetail(@PathVariable Long projectId, Model model, Principal principal) {
+    String currentUsername = principal.getName();
+    Optional<User> currentUserOpt = userRepo.findByUsername(currentUsername);
+    if (currentUserOpt.isEmpty()) {
+        return "redirect:/login";
+    }
+    User currentUser = currentUserOpt.get();
+
+    GroupTodo project = groupTodoRepository.findById(projectId).orElse(null);
+    if (project == null) {
+        return "redirect:/project";
+    }
+
+    boolean isOwner = project.getCreatedBy().getUsername().equals(currentUsername);
+    boolean isMember = projectMemberRepository.existsByUserAndGroupTodo(currentUser, project); // ✅ FIXED HERE
+
+    if (!isOwner && !isMember) {
+        return "redirect:/project";
+    }
 
     model.addAttribute("projectDetail", project);
-    model.addAttribute("username", principal.getName());
+    model.addAttribute("username", currentUsername);
+
+    List<ToDo> allTasks = todoRepo.findByGroup(project); // Ganti sesuai nama field relasi group/project di ToDo
+
+    if (!isOwner) {
+        // Member hanya boleh lihat task miliknya
+        allTasks = allTasks.stream()
+                .filter(t -> t.getUser().getUsername().equals(currentUsername))
+                .collect(Collectors.toList());
+    }
+
+    model.addAttribute("projectTasks", allTasks);
+    model.addAttribute("isOwner", isOwner);
 
     return "project";
 }
@@ -136,6 +177,63 @@ public String addTaskToProject(
 
     return "redirect:/project/" + projectId;
 }
+
+
+@PostMapping("/project/{projectId}/task/edit/{taskId}")
+public String editProjectTask(@PathVariable Long projectId,
+                              @PathVariable Long taskId,
+                              @RequestParam String taskName,
+                              Principal principal) {
+    ToDo task = todoRepo.findById(taskId).orElseThrow();
+    User currentUser = userRepo.findByUsername(principal.getName()).orElseThrow();
+
+    if (task.getGroup() == null || !task.getGroup().getCreatedBy().getId().equals(currentUser.getId())) {
+        return "redirect:/access-denied";
+    }
+
+    task.setTask(taskName);
+    todoRepo.save(task);
+
+    return "redirect:/project/" + projectId;
+}
+
+
+@PostMapping("/task/delete/{id}")
+public String deleteTask(@PathVariable Long id, Principal principal) {
+    ToDo task = todoRepo.findById(id).orElseThrow();
+    User currentUser = userRepo.findByUsername(principal.getName()).orElseThrow();
+
+    if (task.getGroup() == null || !task.getGroup().getCreatedBy().getId().equals(currentUser.getId())) {
+        return "redirect:/access-denied";
+    }
+
+    Long projectId = task.getGroup().getId();
+    todoRepo.delete(task);
+    return "redirect:/project/" + projectId;
+}
+
+
+    @PostMapping("/task/{id}/update")
+public String updateTask(@PathVariable Long id,
+                         @RequestParam("task") String taskName,
+                         Principal principal) {
+    // Validasi: pastikan user adalah owner task
+    ToDo task = todoRepo.findById(id).orElse(null);
+    if (task == null) return "redirect:/project";
+
+    String loggedInUsername = principal.getName();
+    if (!task.getGroup().getCreatedBy().getUsername().equals(loggedInUsername)) {
+        return "redirect:/project";
+    }
+
+    // Update nama task
+    task.setTask(taskName);
+    todoRepo.save(task);
+
+    return "redirect:/project/" + task.getGroup().getId();
+}
+
+
 
 
 }

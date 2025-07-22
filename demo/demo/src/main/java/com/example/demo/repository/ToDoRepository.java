@@ -13,5 +13,8 @@ public interface ToDoRepository extends JpaRepository<ToDo, Long> {
     List<ToDo> findByUser(User user);
     List<ToDo> findByGroup(GroupTodo group);
     List<ToDo> findByUserAndCompleted(User user, boolean completed);
+    List<ToDo> findByUserAndGroupIsNull(User user);
+
+
     
 }

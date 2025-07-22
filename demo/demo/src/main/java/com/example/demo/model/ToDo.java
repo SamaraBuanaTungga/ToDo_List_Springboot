@@ -105,6 +105,6 @@ public class ToDo {
     }
 
     public void setDeadline(LocalDate deadline) {
-        this.deadline = deadline;
+        this.deadline = deadline.now();
     }
 }
