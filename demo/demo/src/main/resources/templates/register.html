@@ -21,18 +21,18 @@
                 <input th:field="*{email}" type="email" class="form-control" id="email" required>
             </div>
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label">Nama Pengguna</label>
                 <input th:field="*{username}" type="text" class="form-control" id="username" required>
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">Kata Sandi</label>
                 <input th:field="*{password}" type="password" class="form-control" id="password" required>
             </div>
             <div class="d-grid mb-3">
                 <button type="submit" class="btn btn-primary">Daftar</button>
             </div>
             <div class="text-center">
-                <small>Sudah punya akun? <a th:href="@{/login}">Login di sini</a></small>
+                <small>Sudah punya akun? <a th:href="@{/login}">Masuk di sini</a></small>
             </div>
         </form>
     </div>

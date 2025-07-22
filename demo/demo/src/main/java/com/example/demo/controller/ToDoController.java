@@ -108,7 +108,7 @@ public String listTodos(Model model, Principal principal) {
             ToDo todo = optionalTodo.get();
             todo.setTask(task);
             if (deadline != null && !deadline.isEmpty()) {
-                todo.setDeadline(LocalDate.now());
+                todo.setDeadline(LocalDate.parse(deadline));
             }
             toDoService.saveTodo(todo);
         }
