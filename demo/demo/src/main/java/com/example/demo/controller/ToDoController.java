@@ -10,6 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.stream.Collectors;
+
+
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +34,7 @@ public String home(Model model, Principal principal) {
         model.addAttribute("username", principal.getName());
     }
     model.addAttribute("newTodo", new ToDo());
+    
     return "index";
 }
 
@@ -50,14 +54,20 @@ public String home(Model model, Principal principal) {
     }
 
     @PostMapping("/update/{id}")
-    public String updateTodo(@PathVariable Long id) {
-        Optional<ToDo> todo = toDoService.getTodoById(id);
-        todo.ifPresent(t -> {
-            t.setCompleted(!t.isCompleted());
-            toDoService.saveTodo(t);
-        });
-        return "redirect:/";
-    }
+public String updateTodo(@PathVariable Long id) {
+    Optional<ToDo> todo = toDoService.getTodoById(id);
+    todo.ifPresent(t -> {
+        t.setCompleted(!t.isCompleted());
+        if (t.isCompleted()) {
+            t.setCompleteAt(LocalDate.now());
+        } else {
+            t.setCompleteAt(null); // kalau dibatalkan selesai
+        }
+        toDoService.saveTodo(t);
+    });
+    return "redirect:/";
+}
+
 
     @GetMapping("/filter")
     public String filterTodos(@RequestParam String filter, Model model, Principal principal) {
@@ -116,22 +126,26 @@ public String listTodos(Model model, Principal principal) {
     }
 
     @GetMapping("/task/{id}/complete")
-    public String markTaskAsCompleted(@PathVariable Long id) {
+public String markTaskAsCompleted(@PathVariable Long id) {
     Optional<ToDo> todo = toDoService.getTodoById(id);
     todo.ifPresent(t -> {
-        t.setCompleted(true); // atau toggle jika kamu ingin ubah-ubah statusnya
+        t.setCompleted(true);
+        t.setCompleteAt(LocalDate.now());
         toDoService.saveTodo(t);
     });
     return "redirect:/project/{id}";
 }
+
     @PostMapping("/task/{id}/complete")
 public String completeTask(@PathVariable Long id) {
     Optional<ToDo> todo = toDoService.getTodoById(id);
     todo.ifPresent(t -> {
         t.setCompleted(true);
+        t.setCompleteAt(LocalDate.now());
         toDoService.saveTodo(t);
     });
-    return "redirect:/project/{id}"; // atau redirect ke halaman proyek
+    return "redirect:/project/{id}"; // ubah jika ingin redirect spesifik
 }
+
 
 }

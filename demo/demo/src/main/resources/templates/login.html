@@ -16,7 +16,7 @@
             <p class="text-muted">Login untuk mulai mengelola tugas</p>
         </div>
         <div th:if="${param.error}" class="alert alert-danger text-center mb-3">
-            Username atau Password salah.
+            Nama Pengguna atau Kata Sandi salah.
         </div>
         <form th:action="@{/login}" method="post">
             <div class="mb-3">

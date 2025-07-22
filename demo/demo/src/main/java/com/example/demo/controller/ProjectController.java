@@ -168,7 +168,7 @@ public String addTaskToProject(
 
     ToDo newTask = new ToDo();
     newTask.setTask(task);
-    newTask.setDeadline(LocalDate.parse(deadline));
+    newTask.setDeadline(LocalDate.now());
     newTask.setUser(assignee);        // Penting!
     newTask.setGroup(group);          // Penting!
     newTask.setCompleted(false);
@@ -233,7 +233,28 @@ public String updateTask(@PathVariable Long id,
     return "redirect:/project/" + task.getGroup().getId();
 }
 
+@PostMapping("/project/{projectId}/task/complete/{taskId}")
+public String markTaskAsCompleted(@PathVariable Long projectId,
+                                  @PathVariable Long taskId,
+                                  Principal principal) {
+    ToDo task = todoRepo.findById(taskId).orElse(null);
+    if (task == null) return "redirect:/project/" + projectId;
 
+    String username = principal.getName();
+    User currentUser = userRepo.findByUsername(username).orElse(null);
+    if (currentUser == null) return "redirect:/login";
+
+    // ❌ Hapus validasi owner → ✅ Hanya user yang ditugaskan yang boleh menyelesaikan
+    if (!task.getUser().getId().equals(currentUser.getId())) {
+        return "redirect:/access-denied";
+    }
+
+    task.setCompleted(true);
+    task.setCompleteAt(LocalDate.now());
+    todoRepo.save(task);
+
+    return "redirect:/project/" + projectId;
+}
 
 
 }

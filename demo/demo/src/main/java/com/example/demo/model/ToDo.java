@@ -27,10 +27,15 @@ public class ToDo {
     @JoinColumn(name = "group_id")
     private GroupTodo group;
 
+
     // Siapa yang dikerahkan (assigned user)
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+    
+    @Column(name = "complete_at")
+    private LocalDate completeAt; // ✅ ubah dari 'completed_at' ke 'completeAt'
+
 
     // Deadline tugas
     private LocalDate deadline;
@@ -59,6 +64,14 @@ public class ToDo {
     public void setTask(String task) {
         this.task = task;
     }
+public LocalDate getCompleteAt() {
+    return completeAt;
+}
+
+public void setCompleteAt(LocalDate completeAt) {
+    this.completeAt = completeAt;
+}
+
 
     public boolean isCompleted() {
         return completed;
@@ -107,4 +120,15 @@ public class ToDo {
     public void setDeadline(LocalDate deadline) {
         this.deadline = deadline;
     }
+
+
+
+    public String getColorClass() {
+    if (!this.completed || this.completeAt == null || this.deadline == null) {
+        return "";
+    }
+
+    return this.completeAt.isAfter(this.deadline) ? "bg-danger text-white" : "bg-success text-white";
+}
+
 }
