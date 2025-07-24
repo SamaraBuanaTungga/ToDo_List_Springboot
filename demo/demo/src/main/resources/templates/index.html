@@ -68,8 +68,8 @@
             </div>
 
             
-            <!-- Form Tambah Tugas -->
-<form action="/add" method="post" class="needs-validation mb-4" novalidate>
+           <!-- Form Tambah Tugas -->
+<form id="addTaskForm" action="/add" method="post" class="needs-validation mb-4" novalidate>
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     <div class="row g-2">
         <div class="col-md-6">
@@ -86,17 +86,24 @@
 
 
 
+
 <!-- Filter Tugas -->
 <div class="mb-3">
-    <div class="btn-group" role="group">
+    <div class="btn-group" role="group" id="filterGroup">
         <a href="/filter?filter=all" class="btn btn-outline-primary"
-           th:classappend="${filter} == 'all' ? 'active' : ''">Semua</a>
+           th:classappend="${filter} == 'all' ? 'active shadow' : ''"
+           data-filter="all">Semua</a>
+
         <a href="/filter?filter=incomplete" class="btn btn-outline-warning"
-           th:classappend="${filter} == 'incomplete' ? 'active' : ''">Belum Selesai</a>
+           th:classappend="${filter} == 'incomplete' ? 'active shadow' : ''"
+           data-filter="incomplete">Belum Selesai</a>
+
         <a href="/filter?filter=completed" class="btn btn-outline-success"
-           th:classappend="${filter} == 'completed' ? 'active' : ''">Selesai</a>
+           th:classappend="${filter} == 'completed' ? 'active shadow' : ''"
+           data-filter="completed">Selesai</a>
     </div>
 </div>
+
 
 
             <!-- Daftar Tugas -->
@@ -186,6 +193,20 @@
         }
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('addTaskForm');
+        const currentFilter = new URLSearchParams(window.location.search).get('filter');
+
+        if (form && currentFilter) {
+            form.addEventListener('submit', function (e) {
+                const originalAction = form.getAttribute('action');
+                form.setAttribute('action', `${originalAction}?filter=${currentFilter}`);
+            });
+        }
+    });
+</script>
+
 
 </body>
 </html>

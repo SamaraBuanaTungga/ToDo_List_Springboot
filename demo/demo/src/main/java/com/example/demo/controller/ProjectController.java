@@ -324,5 +324,33 @@ public String markTaskAsCompleted(@PathVariable Long projectId,
     return "redirect:/project/" + projectId;
 }
 
+@GetMapping("/project/search")
+public String searchProjects(@RequestParam("keyword") String keyword, Model model, Principal principal) {
+    if (principal != null) {
+        String username = principal.getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        // Cari proyek berdasarkan keyword untuk owner dan member
+        List<GroupTodo> ownedProjects = groupTodoRepository.findByCreatedByAndTitleContainingIgnoreCase(currentUser, keyword);
+        List<GroupTodo> memberProjects = groupTodoRepository.findProjectsByMember(currentUser)
+                .stream()
+                .filter(p -> p.getTitle().toLowerCase().contains(keyword.toLowerCase()))
+                .collect(Collectors.toList());
+
+        Set<GroupTodo> allProjects = new HashSet<>();
+        allProjects.addAll(ownedProjects);
+        allProjects.addAll(memberProjects);
+
+        model.addAttribute("projects", allProjects);
+        model.addAttribute("username", username);
+        model.addAttribute("searchKeyword", keyword);
+    } else {
+        model.addAttribute("projects", List.of());
+    }
+
+    return "project"; // tetap gunakan halaman project.html
+}
+
 
 }
