@@ -101,7 +101,6 @@ public String showProjects(Model model, Principal principal) {
         groupTodoService.deleteProject(id);
         return "redirect:/project";
     }
-
 @GetMapping("/project/{projectId}")
 public String viewProjectDetail(@PathVariable Long projectId, Model model, Principal principal) {
     String currentUsername = principal.getName();
@@ -109,8 +108,8 @@ public String viewProjectDetail(@PathVariable Long projectId, Model model, Princ
     if (currentUserOpt.isEmpty()) {
         return "redirect:/login";
     }
-    User currentUser = currentUserOpt.get();
 
+    User currentUser = currentUserOpt.get();
     GroupTodo project = groupTodoRepository.findById(projectId).orElse(null);
     if (project == null) {
         return "redirect:/project";
@@ -130,40 +129,59 @@ public String viewProjectDetail(@PathVariable Long projectId, Model model, Princ
 
     if (!isOwner) {
         allTasks = allTasks.stream()
-                .filter(t -> t.getUser().getUsername().equals(currentUsername))
+                .filter(t -> t.getUser() != null && t.getUser().getUsername().equals(currentUsername))
                 .collect(Collectors.toList());
     }
 
-    // ✅ Hitung status task
-    long totalCompleted = allTasks.stream()
-            .filter(ToDo::isCompleted)
+    LocalDate now = LocalDate.now();
+
+    long totalCompletedOnTime = allTasks.stream()
+            .filter(t -> {
+                LocalDate deadline = t.getDeadline();
+                LocalDate completedAt = t.getCompleteAt();
+                return t.isCompleted()
+                        && deadline != null
+                        && completedAt != null
+                        && !completedAt.isAfter(deadline);
+            })
             .count();
 
     long totalLate = allTasks.stream()
-            .filter(t -> !t.isCompleted() && t.getDeadline() != null && t.getDeadline().isBefore(LocalDate.now()))
+            .filter(t -> {
+                LocalDate deadline = t.getDeadline();
+                LocalDate completedAt = t.getCompleteAt();
+
+                if (deadline == null) return false;
+
+                // Belum selesai tapi deadline lewat
+                if (!t.isCompleted() && deadline.isBefore(now)) return true;
+
+                // Selesai tapi melebihi deadline
+                if (t.isCompleted() && completedAt != null && completedAt.isAfter(deadline)) return true;
+
+                return false;
+            })
             .count();
 
     long totalUnfinished = allTasks.stream()
-            .filter(t -> !t.isCompleted() &&
-                    (t.getDeadline() == null || !t.getDeadline().isBefore(LocalDate.now())))
+            .filter(t -> !t.isCompleted()
+                    && (t.getDeadline() == null || !t.getDeadline().isBefore(now)))
             .count();
 
-    // ✅ Hitung total task secara aman (hindari pembagian 0)
-    long totalTask = totalCompleted + totalLate + totalUnfinished;
+    long totalTask = totalCompletedOnTime + totalLate + totalUnfinished;
     if (totalTask == 0) {
-        totalTask = 1; // Supaya tidak /0 saat progress bar
+        totalTask = 1; // Hindari divide by zero
     }
 
     model.addAttribute("projectTasks", allTasks);
     model.addAttribute("isOwner", isOwner);
-    model.addAttribute("totalCompletedTask", totalCompleted);
+    model.addAttribute("totalCompletedTask", totalCompletedOnTime);
     model.addAttribute("totalLateTask", totalLate);
     model.addAttribute("totalUnfinishedTask", totalUnfinished);
-    model.addAttribute("totalTaskCount", totalTask); // ✅ Tambahan untuk progress bar
+    model.addAttribute("totalTaskCount", totalTask);
 
     return "project";
 }
-
 
 
 
@@ -209,7 +227,7 @@ public String addMemberToProject(@PathVariable Long id,
 public String addTaskToProject(
         @PathVariable("id") Long projectId,
         @RequestParam("task") String task,
-        @RequestParam("deadline") String deadline,
+        @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
         @RequestParam("assigneeId") Long assigneeId) {
 
     GroupTodo group = groupTodoRepository.findById(projectId).orElseThrow();
@@ -217,15 +235,16 @@ public String addTaskToProject(
 
     ToDo newTask = new ToDo();
     newTask.setTask(task);
-    newTask.setDeadline(LocalDate.now());
-    newTask.setUser(assignee);        // Penting!
-    newTask.setGroup(group);          // Penting!
+    newTask.setDeadline(deadline); // ✅ pakai deadline dari form
+    newTask.setUser(assignee);
+    newTask.setGroup(group);
     newTask.setCompleted(false);
 
-    todoRepo.save(newTask);           // Simpan ke database
+    todoRepo.save(newTask);
 
     return "redirect:/project/" + projectId;
 }
+
 
 
 @PostMapping("/project/{projectId}/task/edit/{taskId}")
