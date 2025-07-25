@@ -84,6 +84,21 @@
     </div>
 </form>
 
+
+
+<!-- Filter Tugas -->
+<div class="mb-3">
+    <div class="btn-group" role="group">
+        <a href="/filter?filter=all" class="btn btn-outline-primary"
+           th:classappend="${filter} == 'all' ? 'active' : ''">Semua</a>
+        <a href="/filter?filter=incomplete" class="btn btn-outline-warning"
+           th:classappend="${filter} == 'incomplete' ? 'active' : ''">Belum Selesai</a>
+        <a href="/filter?filter=completed" class="btn btn-outline-success"
+           th:classappend="${filter} == 'completed' ? 'active' : ''">Selesai</a>
+    </div>
+</div>
+
+
             <!-- Daftar Tugas -->
 <div class="list-group">
     <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2 px-3 py-2"
@@ -95,7 +110,11 @@
             <small class="text-muted" th:if="${todo.deadline != null}">
                 Waktu Tenggat: <span th:text="${#temporals.format(todo.deadline, 'dd MMMM yyyy')}"></span>
                 <div th:if="${todo.completed}">
-                <span th:text="'Selesai pada: ' + ${todo.completeAt}"></span>
+                <span class="badge rounded-pill px-2 py-1"
+      th:classappend="${todo.completeAt.isBefore(todo.deadline) or todo.completeAt.equals(todo.deadline)} ? 'bg-success text-light' : 'bg-danger text-light'"
+      th:text="'Selesai pada: ' + ${#temporals.format(todo.completeAt, 'dd MMM yyyy')}">
+            </span>
+
                 
                 
 </div>

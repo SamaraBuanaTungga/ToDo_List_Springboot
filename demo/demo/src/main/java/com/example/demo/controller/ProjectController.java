@@ -246,7 +246,7 @@ public String markTaskAsCompleted(@PathVariable Long projectId,
 
     // ❌ Hapus validasi owner → ✅ Hanya user yang ditugaskan yang boleh menyelesaikan
     if (!task.getUser().getId().equals(currentUser.getId())) {
-        return "redirect:/access-denied";
+        return "redirect:/eror";
     }
 
     task.setCompleted(true);
