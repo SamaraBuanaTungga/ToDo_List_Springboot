@@ -145,6 +145,7 @@
             <div th:if="${projectDetail != null}" class="mt-5 border-top pt-4">
                 <h4 th:text="'Detail Proyek: ' + ${projectDetail.title}"></h4>
                 <p>ID Proyek: <span th:text="${projectDetail.id}"></span></p>
+                 <small class="text-muted">Dibuat oleh: <span th:text="${projectDetail.createdBy.username}"></span></small>
                  <div class="mt-2">
                     <div th:if="${isOwner}">
         <label><strong>Status Task Proyek (Progress):</strong></label>

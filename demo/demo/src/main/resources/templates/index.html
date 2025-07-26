@@ -6,23 +6,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .sidebar {
-            min-height: 100vh;
-            background-color: #f8f9fa;
-            border-right: 1px solid #dee2e6;
-        }
-        .sidebar a {
-            font-weight: 500;
-        }
-        .sidebar a.active {
-            background-color: #0d6efd;
-            color: white;
-        }
-        .sidebar a:hover {
-            background-color: #e2e6ea;
-        }
-    </style>
+     <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+        padding: 1rem;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .sidebar a {
+        font-weight: 500;
+        display: block;
+        padding: 0.5rem 1rem;
+        color: #000;
+        text-decoration: none;
+    }
+
+    .sidebar a.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .sidebar a:hover {
+        background-color: #e2e6ea;
+    }
+
+    main {
+        margin-left: 250px; /* sesuai lebar sidebar */
+        padding: 2rem;
+    }
+</style>
 </head>
 <body>
 <div class="container-fluid">
@@ -66,6 +90,15 @@
                 <h2 class="fw-bold">Daftar Tugas</h2>
                 <p class="text-muted">Kelola tugas harianmu dengan mudah</p>
             </div>
+
+
+            <form action="/search" method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="keyword" class="form-control" placeholder="Cari tugas..." 
+               th:value="${searchKeyword}" />
+        <button type="submit" class="btn btn-outline-secondary">Cari</button>
+    </div>
+</form>
 
             
            <!-- Form Tambah Tugas -->

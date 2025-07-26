@@ -153,5 +153,29 @@ public String completeTask(@PathVariable Long id) {
     return "redirect:/project/{id}"; // ubah jika ingin redirect spesifik
 }
 
+@GetMapping("/search")
+public String searchTodos(@RequestParam("keyword") String keyword, Model model, Principal principal) {
+    if (principal != null) {
+        User user = userRepo.findByUsername(principal.getName()).orElseThrow();
+
+        List<ToDo> results = todoRepo.findByUserAndGroupIsNull(user).stream()
+            .filter(todo -> {
+                String task = todo.getTask() != null ? todo.getTask().toLowerCase() : "";
+                String title = todo.getTitle() != null ? todo.getTitle().toLowerCase() : "";
+                return task.contains(keyword.toLowerCase()) || title.contains(keyword.toLowerCase());
+            })
+            .collect(Collectors.toList());
+
+        model.addAttribute("todos", results);
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("searchKeyword", keyword);
+    } else {
+        model.addAttribute("todos", List.of());
+    }
+
+    return "index";
+}
+
+
 
 }
