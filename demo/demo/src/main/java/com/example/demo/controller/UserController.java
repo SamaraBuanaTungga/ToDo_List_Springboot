@@ -22,12 +22,26 @@ public class UserController {
         return "register";
     }
 
-    @PostMapping("/register")
-    public String processRegister(@ModelAttribute User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        userRepo.save(user);
-        return "redirect:/login";
+   @PostMapping("/register")
+public String processRegister(@ModelAttribute User user, Model model) {
+    if (userRepo.existsByUsername(user.getUsername())) {
+        model.addAttribute("errorMessage", "Username sudah digunakan.");
+        model.addAttribute("user", user);
+        return "register";
     }
+
+    if (userRepo.existsByEmail(user.getEmail())) {
+        model.addAttribute("errorMessage", "Email sudah digunakan.");
+        model.addAttribute("user", user);
+        return "register";
+    }
+
+    user.setPassword(encoder.encode(user.getPassword()));
+    userRepo.save(user);
+
+    model.addAttribute("successMessage", "Pendaftaran berhasil. Silakan login.");
+    return "redirect:/login";
+}
 
     @GetMapping("/login")
     public String login() {

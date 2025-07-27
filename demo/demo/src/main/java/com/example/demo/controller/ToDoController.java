@@ -69,28 +69,34 @@ public String updateTodo(@PathVariable Long id) {
 }
 
 
-    @GetMapping("/filter")
-    public String filterTodos(@RequestParam String filter, Model model, Principal principal) {
-        User user = userRepo.findByUsername(principal.getName()).orElseThrow();
-        List<ToDo> filteredTodos;
+   @GetMapping("/filter")
+public String filterTodos(@RequestParam String filter, Model model, Principal principal) {
+    User user = userRepo.findByUsername(principal.getName()).orElseThrow();
+    List<ToDo> filteredTodos;
 
-        switch (filter) {
-            case "completed":
-                filteredTodos = todoRepo.findByUserAndCompleted(user, true);
-                break;
-            case "incomplete":
-                filteredTodos = todoRepo.findByUserAndCompleted(user, false);
-                break;
-            default:
-    filteredTodos = todoRepo.findByUserAndGroupIsNull(user);
-
-        }
-
-        model.addAttribute("todos", filteredTodos);
-        model.addAttribute("filter", filter);
-        model.addAttribute("username", principal.getName());
-        return "index";
+    switch (filter) {
+        case "completed":
+            filteredTodos = todoRepo.findByUserAndCompleted(user, true)
+                    .stream()
+                    .filter(todo -> todo.getGroup() == null)  // ⬅️ hanya tugas individu
+                    .collect(Collectors.toList());
+            break;
+        case "incomplete":
+            filteredTodos = todoRepo.findByUserAndCompleted(user, false)
+                    .stream()
+                    .filter(todo -> todo.getGroup() == null)  // ⬅️ hanya tugas individu
+                    .collect(Collectors.toList());
+            break;
+        default:
+            filteredTodos = todoRepo.findByUserAndGroupIsNull(user);  // sudah aman
     }
+
+    model.addAttribute("todos", filteredTodos);
+    model.addAttribute("filter", filter);
+    model.addAttribute("username", principal.getName());
+    return "index";
+}
+
 
   @GetMapping("/todos")
 public String listTodos(Model model, Principal principal) {

@@ -143,18 +143,42 @@ public String viewProjectDetail(@PathVariable Long projectId, Model model, Princ
 
 
 @PostMapping("/project/{id}/add-member")
-public String addMemberToProject(@PathVariable Long id, @RequestParam String username) {
+public String addMemberToProject(@PathVariable Long id,
+                                 @RequestParam String username,
+                                 RedirectAttributes redirectAttributes) {
     GroupTodo project = groupTodoService.getProjectById(id);
-    User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User tidak ditemukan: " + username));
+    Optional<User> userOpt = userRepository.findByUsername(username);
 
+    if (userOpt.isEmpty()) {
+        redirectAttributes.addFlashAttribute("errorMessage", "User '" + username + "' tidak ditemukan.");
+        return "redirect:/project/" + id;
+    }
+
+    User user = userOpt.get();
+
+    // ❌ Cek apakah user yang ditambahkan adalah owner
+    if (project.getCreatedBy().getId().equals(user.getId())) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Owner tidak bisa ditambahkan sebagai member.");
+        return "redirect:/project/" + id;
+    }
+
+    // ❌ Cek apakah user sudah jadi member
+    if (projectMemberRepository.existsByUserAndGroupTodo(user, project)) {
+        redirectAttributes.addFlashAttribute("errorMessage", "User '" + username + "' sudah menjadi member.");
+        return "redirect:/project/" + id;
+    }
+
+    // ✅ Tambahkan member baru
     ProjectMember member = new ProjectMember();
     member.setGroupTodo(project);
     member.setUser(user);
     projectMemberRepository.save(member);
 
+    redirectAttributes.addFlashAttribute("successMessage", "Berhasil menambahkan member: " + username);
     return "redirect:/project/" + id;
 }
+
+
 
 @PostMapping("/project/{id}/add-task")
 public String addTaskToProject(
