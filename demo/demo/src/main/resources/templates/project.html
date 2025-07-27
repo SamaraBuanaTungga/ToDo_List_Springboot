@@ -110,6 +110,30 @@
             <div th:if="${projectDetail != null}" class="mt-5 border-top pt-4">
                 <h4 th:text="'Detail Proyek: ' + ${projectDetail.title}"></h4>
                 <p>ID Proyek: <span th:text="${projectDetail.id}"></span></p>
+                 <div class="mt-2">
+        <label><strong>Status Task Proyek (Progress):</strong></label>
+    <div class="progress" style="height: 30px;">
+        <!-- ✅ Selesai -->
+        <div class="progress-bar bg-success" role="progressbar"
+             th:style="'width: ' + (${totalCompletedTask} * 100 / ${totalTaskCount}) + '%'"
+
+             th:text="${totalCompletedTask + ' Selesai'}">
+        </div>
+        
+        <!-- ❌ Terlambat -->
+        <div class="progress-bar bg-danger" role="progressbar"
+             th:style="'width: ' + (${totalCompletedTask} * 100 / ${totalTaskCount}) + '%'"
+
+             th:text="${totalLateTask + ' Terlambat'}">
+        </div>
+
+        <!-- 🕗 Belum Selesai -->
+        <div class="progress-bar bg-warning text-dark" role="progressbar"
+             th:style="'width: ' + (${totalCompletedTask} * 100 / ${totalTaskCount}) + '%'"
+
+             th:text="${totalUnfinishedTask + ' Belum'}">
+        </div>
+    </div>
 
                 <!-- Form Tambah Task (khusus owner) -->
                 <div class="mt-4" th:if="${isOwner}">

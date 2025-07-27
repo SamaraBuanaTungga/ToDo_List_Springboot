@@ -117,7 +117,7 @@ public String viewProjectDetail(@PathVariable Long projectId, Model model, Princ
     }
 
     boolean isOwner = project.getCreatedBy().getUsername().equals(currentUsername);
-    boolean isMember = projectMemberRepository.existsByUserAndGroupTodo(currentUser, project); // ✅ FIXED HERE
+    boolean isMember = projectMemberRepository.existsByUserAndGroupTodo(currentUser, project);
 
     if (!isOwner && !isMember) {
         return "redirect:/project";
@@ -126,20 +126,45 @@ public String viewProjectDetail(@PathVariable Long projectId, Model model, Princ
     model.addAttribute("projectDetail", project);
     model.addAttribute("username", currentUsername);
 
-    List<ToDo> allTasks = todoRepo.findByGroup(project); // Ganti sesuai nama field relasi group/project di ToDo
+    List<ToDo> allTasks = todoRepo.findByGroup(project);
 
     if (!isOwner) {
-        // Member hanya boleh lihat task miliknya
         allTasks = allTasks.stream()
                 .filter(t -> t.getUser().getUsername().equals(currentUsername))
                 .collect(Collectors.toList());
     }
 
+    // ✅ Hitung status task
+    long totalCompleted = allTasks.stream()
+            .filter(ToDo::isCompleted)
+            .count();
+
+    long totalLate = allTasks.stream()
+            .filter(t -> !t.isCompleted() && t.getDeadline() != null && t.getDeadline().isBefore(LocalDate.now()))
+            .count();
+
+    long totalUnfinished = allTasks.stream()
+            .filter(t -> !t.isCompleted() &&
+                    (t.getDeadline() == null || !t.getDeadline().isBefore(LocalDate.now())))
+            .count();
+
+    // ✅ Hitung total task secara aman (hindari pembagian 0)
+    long totalTask = totalCompleted + totalLate + totalUnfinished;
+    if (totalTask == 0) {
+        totalTask = 1; // Supaya tidak /0 saat progress bar
+    }
+
     model.addAttribute("projectTasks", allTasks);
     model.addAttribute("isOwner", isOwner);
+    model.addAttribute("totalCompletedTask", totalCompleted);
+    model.addAttribute("totalLateTask", totalLate);
+    model.addAttribute("totalUnfinishedTask", totalUnfinished);
+    model.addAttribute("totalTaskCount", totalTask); // ✅ Tambahan untuk progress bar
 
     return "project";
 }
+
+
 
 
 @PostMapping("/project/{id}/add-member")
